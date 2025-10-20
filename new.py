@@ -84,5 +84,10 @@ for i in range(numEntries):
             elif HLTIsoMu19Tau20Fired:
                 lastFilterBitMuon = 8
                 if filterBits & (1<<lastFilterBitMuon):
-                    if muPt>19 & muEta < 2.1:
-                         
+                    if muPt>20 & muPt < 23:
+                        pass
+                if abs(trigId) != 15:
+                    continue
+                if filterBits & (1<<3)
+
+                        
