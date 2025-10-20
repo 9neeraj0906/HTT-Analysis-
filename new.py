@@ -36,7 +36,7 @@ start = time.time()
 for i in range(numEntries):
     tree.GetEntry(i)
     # condition for atleast one muon
-    if nMuon <= 0:
+    if tree.nMuon <= 0:
         continue
 
     #Check if the muon selected is from one of the HLT paths or not
@@ -56,38 +56,50 @@ for i in range(numEntries):
     HLTIsoMu19Tau20Fired = tree.HLT_IsoMu19_eta2p1_LooseIsoPFTau20[i] or tree.HLT_IsoMu19_eta2p1_LooseIsoPFTau20_singleL1[i]
 
     #We have nMuon for every different entry, hence we have nMuon number of muonic variables/properties. For each nMuon there can be nTrigObj
+    # Loop over all reconstructed muons
     for j in range(tree.nMuon):
-    muPt = tree.Muon_pt[j]
-    muEta = tree.Muon_eta[j]
-    muPhi = tree.Muon_phi[j]
+        muPt  = tree.Muon_pt[j]
+        muEta = tree.Muon_eta[j]
+        muPhi = tree.Muon_phi[j]
 
+        # Loop over all trigger objects for each muon
         for k in range(tree.nTrigObj):
-            # Define variables
             trigEta = tree.TrigObj_eta[k]
             trigPhi = tree.TrigObj_phi[k]
-            trigId = tree.TrigObj_id[k] # Every particle has one unique trigger Id. For muon it is 13
+            trigId  = tree.TrigObj_id[k]
             filterBits = tree.TrigObj_filterBits[k]
 
+            # Only keep muon trigger objects
             if abs(trigId) != 13:
-                continue # Checks if the particle is muon or not. if not a muon, iteration ends
-
-            # check whether deltaR < 0.5 or not
-            deltaRMu = deltaR(muEta, muPhi, TrigObj_eta, TrigObj_phi)
-            if deltaRMu >= 0:
                 continue
 
-            if HLTIsoMu22Fired:
-                isoFilterBit = 1
-                if filterBits & (1<<isoFilterBit):
-                    if muPt > 23 and muEta < 2.1:
-                    pass
-            elif HLTIsoMu19Tau20Fired:
-                lastFilterBitMuon = 8
-                if filterBits & (1<<lastFilterBitMuon):
-                    if muPt>20 & muPt < 23:
-                        pass
-                if abs(trigId) != 15:
-                    continue
-                if filterBits & (1<<3)
+            # ΔR matching between reco muon and trig muon
+            if deltaR(muEta, muPhi, trigEta, trigPhi) >= 0.5:
+                continue
 
-                        
+            # Case 1: IsoMu22 fired
+            if HLTIsoMu22Fired:
+                isoFilterBit = 1  # TrkIsoVVL
+                if filterBits & (1 << isoFilterBit):
+                    if muPt > 23 and abs(muEta) < 2.1:
+                        pass  # matched to IsoMu22
+
+            # Case 2: Mu19Tau20 fired
+            elif HLTIsoMu19Tau20Fired:
+                    lastFilterBitMuon = 8  # IsoTkMu (last filter for muon)
+                    if filterBits & (1 << lastFilterBitMuon):
+                        if 20 < muPt < 23 and abs(muEta) < 2.1:
+                            # Now look for matching tau trigger object
+                            for t in range(tree.nTrigObj):
+                                if abs(tree.TrigObj_id[t]) != 15:
+                                    continue  # skip non-tau objects
+
+                                tauEta = tree.TrigObj_eta[t]
+                                tauPhi = tree.TrigObj_phi[t]
+                                tauFilterBits = tree.TrigObj_filterBits[t]
+                                # ΔR match between muon and tau trig objs
+                                if deltaR(muEta, muPhi, tauEta, tauPhi) >= 0.5:
+                                    continue
+                                # Tau should pass its last filter ( bit 8)
+                                if tauFilterBits & (1 << 8):  # adjust bit number if needed
+                                    pass  #  Both muon and tau matched successfully
