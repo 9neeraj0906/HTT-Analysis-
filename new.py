@@ -73,32 +73,53 @@ for i in range(numEntries):
 
 			# Case 1: IsoMu22 fired
 			if HLTIsoMu22Fired:
-				isoFilterBit = 1  # TrkIsoVVL
+				isoFilterBit = 1  # TrkIsoVVL
 				if filterBits & (1 << isoFilterBit):
 					if muPt > 23 and abs(muEta) < 2.1:
-						pass  # matched to IsoMu22
+						pass  # matched to IsoMu22
 
 			# Case 2: Mu19Tau20 fired
 			elif HLTIsoMu19Tau20Fired:
-				lastFilterBitMuon = 8  # IsoTkMu (last filter for muon)
+				lastFilterBitMuon = 8  # IsoTkMu (last filter for muon)
 				if filterBits & (1 << lastFilterBitMuon):
 					if 20 < muPt < 23 and abs(muEta) < 2.1:
 						# Now look for matching tau trigger object
-						for t in range(tree.nTrigObj):
-							if abs(tree.TrigObj_id[t]) != 15:
-								continue  # skip non-tau objects
+						for p in range(tree.nTau):
+							tauPt = tree.Tau_pt[p]
+							tauEta = tree.Tau_Eta[p]
+							tauPhi = tree.Tau_phi[p]
+							tauDz = tree.Tau_dz[p]
 
-							tauEta = tree.TrigObj_eta[t]
-							tauPhi = tree.TrigObj_phi[t]
-							tauFilterBits = tree.TrigObj_filterBits[t]
 
-							# deltaR match between muon and tau trig objs
-							if deltaR(muEta, muPhi, tauEta, tauPhi) >= 0.5:
+							if tauDz > 0.2:
 								continue
+							if tauPt < 20 or abs(tauEta) > 2.3:
+			                    continue
+			                if tree.Tau_idDeepTau2017v2p1VSjet[p] <  16:
+			                    continue
+			                if tree.Tau_idDeepTau2017v2p1VSe[p] < 1:
+			                    continue
+			                if tree.Tau_idDeepTau2017v2p1VSmu[p] < 8:
+			                    continue
+			                if tree.Tau_decayMode[p] != 0 and tree.Tau_decayMode[p] != 1 and tree.Tau_decayMode[p] != 10:
+			                    continue
 
-							# Tau should pass its last filter (bit 8)
-							if tauFilterBits & (1 << 8):
-								pass  # Both muon and tau matched successfully
+							for t in range(tree.nTrigObj):
+								if abs(tree.TrigObj_id[t]) != 15:
+									continue  # skip non-tau objects
+								if tauPt < 30 and tauEta > 2.3:
+									continue
+								trigEta = tree.TrigObj_eta[t]
+								trigPhi = tree.TrigObj_phi[t]
+								trigFilterBits = tree.TrigObj_filterBits[t]
+
+								# deltaR match between muon and tau trig objs
+								if deltaR(tauEta, tauPhi, trigEta, trigPhi) >= 0.5:
+									continue
+
+								# Tau should pass its last filter (bit 8)
+								if trigFilterBits & (1 << 8):
+									pass  # Both muon and tau matched successfully
 
 		# Transverse mass (compute once per matched muon)
 		metPt = tree.MET_pt
