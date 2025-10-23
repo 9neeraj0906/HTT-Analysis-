@@ -31,6 +31,22 @@ for i in range(numEvents):
     if tree.nMuon <= 0:
         continue
 
+    MetFilters = [
+    tree.Flag_goodVertices,
+    tree.Flag_globalSuperTightHalo2016Filter,
+    tree.Flag_HBHENoiseFilter,
+    tree.Flag_HBHENoiseIsoFilter,
+    tree.Flag_EcalDeadCellTriggerPrimitiveFilter,
+    tree.Flag_BadPFMuonFilter,
+    tree.Flag_BadPFMuonSummer16Filter,
+    tree.Flag_ecalBadCalibFilter
+    ]
+
+    # Check if *all* filters are True; if not, skip the event
+    if not all(MetFilters):
+        continue
+
+
     # Check if the muon selected is from one of the HLT paths
     HLT_paths = [
         tree.HLT_IsoMu22,
