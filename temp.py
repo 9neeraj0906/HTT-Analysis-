@@ -14,6 +14,9 @@ def deltaR(eta1, phi1, eta2, phi2):
 
 
 dataPath = "/data/mu/0DEE1709-0416-F24B-ACB2-C68997CB6465.root"
+smcPath = ""
+bmcPath = ""
+
 f = ROOT.TFile.Open(dataPath)
 tree = f.Get("Events")
 
