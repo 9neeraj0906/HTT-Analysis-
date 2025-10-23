@@ -14,3 +14,7 @@ print("Tree loaded:", tree.GetName())  # Tree name
 for b in tree.GetListOfBranches():
 	if "HLT" in b.GetName():
 		print(b.GetName())
+for b in tree.GetListOfBranches():
+    name = b.GetName()
+    if "btag" in name.lower():
+        print(name)
