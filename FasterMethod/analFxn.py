@@ -240,7 +240,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
             event_weight = 1.0 # Default weight for data
             if is_mc:
                 # If genWeight exists (it's an MC file), use its value
-                event_weight = tree.genWeight
+                event_weight = tree.Generator_weight
             hMt.Fill(mt, event_weight)
 
 
