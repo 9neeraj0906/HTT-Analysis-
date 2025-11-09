@@ -17,10 +17,7 @@ def deltaR(eta1, phi1, eta2, phi2):
 def Analysis(file_path, hist_name="hMt", is_mc = False):
     f = ROOT.TFile.Open(file_path)
 
-    # Check 1: Ensure the file is open and not a "zombie"
-    if not f or f.IsZombie():
-        print "ERROR: Cannot open or file is corrupt:", file_path
-        return None
+
 
     tree = f.Get("Events")
 
@@ -45,7 +42,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
 
         if tree.nMuon <= 0:
             continue
-
+        #  ****----These are for all type of datasets----****
         # 1. MET Filters
         MetFilters = [
         tree.Flag_goodVertices,
@@ -129,7 +126,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
         if vetoThirdLepton:
             continue
 
-        # 4. Muon Pre-selection (based on your image criteria)
+        # 4. Muon Pre-selection
         for j in range(tree.nMuon):
             muPt = tree.Muon_pt[j]
             muEta = tree.Muon_eta[j]
@@ -149,8 +146,11 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
 
             # Primaary vertex
             if tree.PV_npvsGood < 1: continue
+            #****----Common Selection type of datasets ends here----****
 
-            # HLT paths (Checking if *any* relevant path fired)
+
+            # ****----These selections are for mu tau final states data types----****
+            # HLT paths
             HLT_paths = [
                 tree.HLT_IsoMu22,
                 tree.HLT_IsoMu19_eta2p1_LooseIsoPFTau20,
@@ -208,7 +208,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
                     tauEta = tree.Tau_eta[p]
                     tauPhi = tree.Tau_phi[p]
 
-                    if tauPt < 20 or abs(tauEta) > 2.3: continue
+                    if tauPt < 20 or abs(tauEta) > 2.1: continue
                     if tree.Tau_idDeepTau2017v2p1VSjet[p] <  16: continue # Medium VS Jet ID
                     if tree.Tau_idDeepTau2017v2p1VSe[p] < 1: continue # VLoose VS E ID
                     if tree.Tau_idDeepTau2017v2p1VSmu[p] < 8: continue # Tight VS Mu ID
@@ -240,7 +240,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
             event_weight = 1.0 # Default weight for data
             if is_mc:
                 # If genWeight exists (it's an MC file), use its value
-                event_weight = tree.Generator_weight
+                event_weight = 10* tree.Generator_weight
             hMt.Fill(mt, event_weight)
 
 

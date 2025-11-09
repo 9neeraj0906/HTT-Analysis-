@@ -28,6 +28,7 @@ hMtData.SetLineColor(ROOT.kBlack)
 hMtData.SetMarkerStyle(20)
 
 hMtSignal.SetLineColor(ROOT.kRed)
+hMtSignal.SetLineStyle(2)
 hMtSignal.SetLineWidth(2)
 
 hMtBackground.SetLineColor(ROOT.kBlue)
@@ -38,8 +39,8 @@ hMtBackground.SetLineWidth(2)
 c = ROOT.TCanvas("c", "MT Plots", 800, 700)
 # c.SetLogy()  # Important to view small background
 
-hMtData.Draw("E")  # Data points
-hMtSignal.Draw("HIST SAME")
+# hMtData.Draw("E")  # Data points
+#hMtSignal.Draw("HIST SAME")
 hMtBackground.Draw("HIST SAME")
 
 # Legend
