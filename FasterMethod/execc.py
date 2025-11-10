@@ -2,13 +2,13 @@ import ROOT
 
 # Load files
 fD = ROOT.TFile("hMtData.root")
-fS = ROOT.TFile("hMtSignal.root")
-fB = ROOT.TFile("hMtBackground.root")
+fS = ROOT.TFile("hMtSignal_combined.root")
+fB = ROOT.TFile("hMtBackground_combined.root")
 
 # Get histograms
 hMtData = fD.Get("hMtData")
-hMtSignal = fS.Get("hMtSignal")
-hMtBackground = fB.Get("hMtBackground")
+hMtSignal = fS.Get("hMtSignalTotal")
+hMtBackground = fB.Get("hMtBackgroundTotal")
 
 # # Scale MC to Data for visual comparison
 # data_int = hMtData.Integral()
@@ -39,8 +39,8 @@ hMtBackground.SetLineWidth(2)
 c = ROOT.TCanvas("c", "MT Plots", 800, 700)
 # c.SetLogy()  # Important to view small background
 
-# hMtData.Draw("E")  # Data points
-#hMtSignal.Draw("HIST SAME")
+hMtData.Draw("E")  # Data points
+hMtSignal.Draw("HIST SAME")
 hMtBackground.Draw("HIST SAME")
 
 # Legend
