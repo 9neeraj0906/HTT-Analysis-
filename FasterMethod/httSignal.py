@@ -3,6 +3,7 @@ import math
 import time
 
 from analFxn import Analysis
+# all the signal files are included no need to include anymore
 
 signalMCPath = [
     "/data/smc/03F42243-AFD4-F348-92E9-6E6AC3B36FD6.root",
