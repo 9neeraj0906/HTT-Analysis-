@@ -32,3 +32,4 @@ output_file.cd()
 hMtSignalTotal.Write()
 
 output_file.Close()
+print("Run Completed")
