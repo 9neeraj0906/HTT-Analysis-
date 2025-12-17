@@ -1,9 +1,12 @@
 import ROOT
+import os
+
 
 # Load files
 fD = ROOT.TFile("hMtData.root")
 fS = ROOT.TFile("hMtSignal_combined.root")
-fB = ROOT.TFile("hMtBackground_combined.root")
+#os.system("hadd hMtBackground_combined hMtBackground_combinedPart1.root hMtBackground_combinedPart2.root")
+fB = ROOT.TFile("hMtBackground_combinedPart1.root")
 
 # Get histograms
 hMtData = fD.Get("hMtData")
