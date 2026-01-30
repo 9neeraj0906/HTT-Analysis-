@@ -3,27 +3,20 @@ import os
 
 
 # Load files
-fD = ROOT.TFile("hMtData.root")
-fS = ROOT.TFile("hMtSignal_combined.root")
-#os.system("hadd hMtBackground_combined hMtBackground_combinedPart1.root hMtBackground_combinedPart2.root")
-fB = ROOT.TFile("hMtBackground_combinedPart1.root")
+#Combining parts of data files
+os.system("hadd hMTData_combined -f hMTData_combinedPart2.root hMTData_combinedPart1.root")
+fD = ROOT.TFile("hMtData_combined.root")
+
+fS = ROOT.TFile("hMtSignal_combined1.root")
+
+#Combining parts of background files
+os.system("hadd hMtBackground_combined -f hMtBackground_combinedPart1.root hMtBackground_combinedPart2.root")
+fB = ROOT.TFile("hMtBackground_combined.root")
 
 # Get histograms
-hMtData = fD.Get("hMtData")
+hMtData = fD.Get("hMtDataTotal")
 hMtSignal = fS.Get("hMtSignalTotal")
 hMtBackground = fB.Get("hMtBackgroundTotal")
-
-# # Scale MC to Data for visual comparison
-# data_int = hMtData.Integral()
-# signal_int = hMtSignal.Integral()
-# bkg_int = hMtBackground.Integral()
-#
-# if signal_int > 0:
-#     hMtSignal.Scale(data_int / signal_int)
-#
-# if bkg_int > 0:
-#     hMtBackground.Scale(data_int / bkg_int)
-#
 
 
 # Style settings
@@ -40,10 +33,10 @@ hMtBackground.SetLineWidth(2)
 
 # Draw
 c = ROOT.TCanvas("c", "MT Plots", 800, 700)
-# c.SetLogy()  # Important to view small background
+
 
 hMtData.Draw("E")  # Data points
-hMtSignal.Draw("HIST SAME")
+hMtSignal.Draw("HIST SAME", "nostack")
 hMtBackground.Draw("HIST SAME")
 
 # Legend
