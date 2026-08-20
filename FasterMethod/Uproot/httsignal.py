@@ -1,8 +1,9 @@
 import ROOT
-import math
 import time
+import math
+import sys, os
+from analysisfxn import Analysis_up
 
-from analFxn import Analysis
 # all the signal files are included no need to include anymore
 
 signalMCPath = [
@@ -19,14 +20,20 @@ signalMCPath = [
 output_file = ROOT.TFile("hMtSignal_combined.root", "RECREATE")
 hMtSignalTotal = None
 
-
+start = time.time()
 for i in range(len(signalMCPath)):
-    hMtSignal = Analysis(signalMCPath[i], hist_name="htemp%d" % i, is_mc=True)
+    file_start = time.time()
+    hMtSignal = Analysis_up(signalMCPath[i], hist_name="htemp%d" % i, is_mc=True)
+    print "[%d/%d] %s done in %.1fs" % (
+        i + 1, len(signalMCPath), signalMCPath[i], time.time() - file_start)
+
+
     if hMtSignalTotal is None:
         hMtSignalTotal= hMtSignal.Clone("hMtSignalTotalmc")
     else:
         hMtSignalTotal.Add(hMtSignal)
 
+print "\nAll files processed in %.1fs" % (time.time() - start)
 
 output_file.cd()
 hMtSignalTotal.Write()

@@ -1,25 +1,20 @@
-# compare_test.py
+# -*- coding: utf-8 -*-
 import ROOT
-import numpy as np
-from analFxn import Analysis
-from analFxn_up import Analysis_up
+from analysisfxn import Analysis, Analysis_up
+import awkward as ak
 
-TEST_FILE = "/path/to/one_background_file.root"
+
+TEST_FILE = "/data/bmc/18C499E2-9229-DC45-A68F-6A40600A5C8E.root"
 IS_MC = True
 
 # -----------------------------------------------
 # Run both versions
 # -----------------------------------------------
-print("Running FOR-LOOP version...")
+print "Running FOR-LOOP version..."
 hLoop = Analysis(TEST_FILE, hist_name="hLoop", is_mc=IS_MC)
 
-print("\nRunning VECTORIZED version...")
-hVec_hist = Analysis_up(TEST_FILE, is_mc=IS_MC)
-
-# Convert hist.Hist → ROOT TH1F for apples-to-apples comparison
-hVec = ROOT.TH1F("hVec", "Vectorized; MT [GeV]; Events", 100, 0.0, 150.0)
-for i in range(100):
-    hVec.SetBinContent(i+1, hVec_hist.values()[i])
+print "\nRunning VECTORIZED version..."
+hVec = Analysis_up(TEST_FILE, hist_name="hVec", is_mc=IS_MC)
 
 # -----------------------------------------------
 # Save both to a ROOT file
@@ -28,34 +23,36 @@ out = ROOT.TFile("comparison.root", "RECREATE")
 hLoop.Write("hLoop")
 hVec.Write("hVec")
 out.Close()
-print("\nSaved to comparison.root")
+print "\nSaved to comparison.root"
 
 # -----------------------------------------------
-# Numerical check: print bin-by-bin differences
+# Numerical check: bin-by-bin differences
 # -----------------------------------------------
-print("\n--- Bin-by-bin check ---")
-print("%-10s %-15s %-15s %-10s" % ("Bin", "Loop", "Vec", "Diff%"))
+print "\n--- Bin-by-bin check ---"
+print "%-10s %-15s %-15s %-10s" % ("Bin", "Loop", "Vec", "Diff%")
 max_diff = 0.0
 for i in range(1, 101):
     loop_val = hLoop.GetBinContent(i)
     vec_val  = hVec.GetBinContent(i)
     if loop_val > 0:
-        diff = abs(vec_val - loop_val) / loop_val * 100
-        max_diff = max(max_diff, diff)
+        diff = abs(vec_val - loop_val) / loop_val * 100.0
+        if diff > max_diff:
+            max_diff = diff
         if diff > 1.0:
-            print("%-10d %-15.4f %-15.4f %-10.2f%%" % (i, loop_val, vec_val, diff))
+            print "%-10d %-15.4f %-15.4f %-10.2f%%" % (i, loop_val, vec_val, diff)
 
-print("\nMax bin difference: %.4f%%" % max_diff)
+print "\nMax bin difference: %.4f%%" % max_diff
 if max_diff < 0.01:
-    print("PASS: histograms match within 0.01%")
+    print "PASS: histograms match within 0.01%%"
 else:
-    print("FAIL: discrepancy found — check logic above")
+    print "FAIL: discrepancy found - check logic above"
 
 # -----------------------------------------------
 # Plot: overlay + ratio
 # -----------------------------------------------
 hLoop.SetLineColor(ROOT.kBlue)
 hLoop.SetLineWidth(2)
+hLoop.SetLineStyle(1)
 
 hVec.SetLineColor(ROOT.kRed)
 hVec.SetLineWidth(2)
@@ -63,7 +60,6 @@ hVec.SetLineStyle(2)
 
 c = ROOT.TCanvas("c", "Comparison", 800, 900)
 
-# Top pad — overlay
 top = ROOT.TPad("top", "top", 0, 0.35, 1, 1.0)
 top.SetBottomMargin(0.02)
 top.Draw()
@@ -77,7 +73,6 @@ leg.AddEntry(hLoop, "For-loop", "l")
 leg.AddEntry(hVec,  "Vectorized", "l")
 leg.Draw()
 
-# Bottom pad — ratio
 c.cd()
 bot = ROOT.TPad("bot", "bot", 0, 0.0, 1, 0.35)
 bot.SetTopMargin(0.02)
@@ -104,4 +99,4 @@ line.SetLineStyle(2)
 line.Draw("SAME")
 
 c.SaveAs("comparison.pdf")
-print("\nSaved comparison.pdf")
+print "\nSaved comparison.pdf"

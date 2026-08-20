@@ -21,6 +21,7 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
 
     tree = f.Get("Events")
 
+
     # Check 2: Ensure the TTree exists
     if not tree:
         print "ERROR: TTree 'Events' not found in file:", file_path
@@ -238,9 +239,11 @@ def Analysis(file_path, hist_name="hMt", is_mc = False):
             metPhi = tree.MET_phi
             mt = math.sqrt(2 * muPt * metPt * (1 - math.cos(muPhi - metPhi)))
             event_weight = 1.0 # Default weight for data
+            luminosity = 35920
+            sigma = 6077.22
             if is_mc:
                 # If genWeight exists (it's an MC file), use its value
-                event_weight =  tree.genWeight
+                event_weight =  tree.genWeight * sigma *luminosity/numEvents
             hMt.Fill(mt, event_weight)
 
 

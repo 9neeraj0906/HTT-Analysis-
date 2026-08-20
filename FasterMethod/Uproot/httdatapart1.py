@@ -1,8 +1,8 @@
 import ROOT
-import math
 import time
-
-from analFxn import Analysis
+import math
+import sys, os
+from analysisfxn import Analysis_up
 
 dataPath = [
     "/data/mu/mu part1/0107961B-4308-F845-8F96-E14622BBA484.root",
@@ -45,12 +45,18 @@ dataPath = [
 
 output_file = ROOT.TFile("hMTData_combinedPart1.root", "RECREATE")
 hMTDataTotal = None
+start = time.time()
 for i in range(len(dataPath)):
-    hMTData = Analysis(dataPath[i], hist_name="htemp%d" % i, is_mc = False)
+    file_start = time.time()
+    hMTData = Analysis_up(dataPath[i], hist_name="htemp%d" % i, is_mc = False)
+    print "[%d/%d] %s done in %.1fs" % (
+        i + 1, len(dataPath), dataPath[i], time.time() - file_start)
+
     if hMTDataTotal is None:
         hMTDataTotal = hMTData.Clone("hMTDataTotal")
     else:
         hMTDataTotal.Add(hMTData)
+print "\nAll files processed in %.1fs" % (time.time() - start)
 
 
 output_file.cd()
