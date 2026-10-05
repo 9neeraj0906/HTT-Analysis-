@@ -309,16 +309,8 @@ def Analysis_up(filePath, hist_name="hMvis", is_mc=False,
     # ========================================================
     # TRIGGER
     # ========================================================
-
-    hlt_mu22 = br["HLT_IsoMu22_eta2p1"]
-    # USE ONLY MU TAU TRIGGERS
-
-
-    hlt_mu19tau = (
-        br["HLT_IsoMu19_eta2p1_LooseIsoPFTau20"] | # USE ONLY THIS TRIGGER
-        
-        br["HLT_IsoMu19_eta2p1_LooseIsoPFTau20_SingleL1"]
-    )
+    # USE ONLY MU-TAU TRIGGER
+    hlt_mu19tau = br["HLT_IsoMu19_eta2p1_LooseIsoPFTau20"]
 
     mu = ak.JaggedArray.zip(
         pt=br["Muon_pt"],
@@ -348,17 +340,8 @@ def Analysis_up(filePath, hist_name="hMvis", is_mc=False,
         tm["eta"], tm["phi"]
     ) < 0.5
 
-    f22 = (
-        (tm["filterBits"] & (1 << 1)) != 0
-    )
-
     f19 = (
         (tm["filterBits"] & (1 << 8)) != 0
-    )
-
-    mu22_kin = (
-        (m["pt"] > 23) &
-        (abs(m["eta"]) < 2.1)
     )
 
     mu19_kin = (
@@ -367,24 +350,14 @@ def Analysis_up(filePath, hist_name="hMvis", is_mc=False,
         (abs(m["eta"]) < 2.1)
     )
 
-    match22 = (
-        dr &
-        f22 &
-        mu22_kin &
-        hlt_mu22
-    )
-
     match19 = (
         dr &
         f19 &
         mu19_kin &
-        (~hlt_mu22) &
         hlt_mu19tau
     )
 
-    mu22 = match22.any()
     mu19 = match19.any()
-
     # ========================================================
     # TAU SELECTION
     # ========================================================
