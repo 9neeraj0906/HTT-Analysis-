@@ -1,7 +1,5 @@
 import ROOT
 import time
-import math
-import sys, os
 from analysisfxn import Analysis_up
 
 dataPath = [
@@ -42,23 +40,39 @@ dataPath = [
     "/data/mu/mu part1/FE81EE6E-0E21-1847-9105-D700F2E762DB.root"
 ]
 
+output_file = ROOT.TFile(
+    "hMvisData_combinedPart1.root",
+    "RECREATE"
+)
 
-output_file = ROOT.TFile("hMTData_combinedPart1.root", "RECREATE")
-hMTDataTotal = None
+hMvisDataTotal = None
 start = time.time()
-for i in range(len(dataPath)):
+
+for i, fp in enumerate(dataPath):
     file_start = time.time()
-    hMTData = Analysis_up(dataPath[i], hist_name="htemp%d" % i, is_mc = False)
+
+    hMvisData = Analysis_up(
+        fp,
+        hist_name="hMvis_%d" % i,
+        is_mc=False
+    )
+
     print "[%d/%d] %s done in %.1fs" % (
-        i + 1, len(dataPath), dataPath[i], time.time() - file_start)
+        i + 1,
+        len(dataPath),
+        fp,
+        time.time() - file_start
+    )
 
-    if hMTDataTotal is None:
-        hMTDataTotal = hMTData.Clone("hMTDataTotal")
+    if hMvisDataTotal is None:
+        hMvisDataTotal = hMvisData.Clone("hMvisDataTotal")
     else:
-        hMTDataTotal.Add(hMTData)
-print "\nAll files processed in %.1fs" % (time.time() - start)
+        hMvisDataTotal.Add(hMvisData)
 
+print "\nData Part 1 processed in %.1fs" % (
+    time.time() - start
+)
 
 output_file.cd()
-hMTDataTotal.Write()
+hMvisDataTotal.Write()
 output_file.Close()

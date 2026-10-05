@@ -1,45 +1,58 @@
 import ROOT
 import os
 
-# Data, signal, and background were each produced from a single full run
-# this time (not split into parts), so there's nothing to hadd anymore --
-# just open each output file directly.
-os.system("hadd hMtData_combined.root -f hMTData_combinedPart1.root hMTData_combinedPart2.root")
+# Combine the two data files
+os.system(
+    "hadd hMvisData_combined.root -f "
+    "hMvisData_combinedPart1.root "
+    "hMvisData_combinedPart2.root"
+)
 
-fD = ROOT.TFile("hMtData_combined.root")
-fS = ROOT.TFile("hMtSignal_combined.root")
-fB = ROOT.TFile("hMtBackground_combined21.root")
+# Open files
+fD = ROOT.TFile("hMvisData_combined.root")
+fB = ROOT.TFile("hMvisBackground_combined.root")
 
 # Get histograms
-hMtData = fD.Get("hMTDataTotal")
-hMtSignal = fS.Get("hMtSignalTotalmc")
-hMtBackground = fB.Get("hMtBackgroundTotalmc")
+hMvisData = fD.Get("hMvisDataTotal")
+hMvisBackground = fB.Get("hMvisBackgroundTotal")
 
 # Style settings
-hMtData.SetLineColor(ROOT.kBlack)
-hMtData.SetMarkerStyle(20)
-hMtSignal.SetLineColor(ROOT.kRed)
-hMtSignal.SetLineStyle(2)
-hMtSignal.SetLineWidth(2)
-hMtBackground.SetLineColor(ROOT.kBlue)
-hMtBackground.SetLineStyle(2)
-hMtBackground.SetLineWidth(2)
+hMvisData.SetLineColor(ROOT.kBlack)
+hMvisData.SetMarkerStyle(20)
+
+hMvisBackground.SetLineColor(ROOT.kBlue)
+hMvisBackground.SetLineStyle(2)
+hMvisBackground.SetLineWidth(2)
 
 # Draw
-c = ROOT.TCanvas("c", "MT Plots", 800, 700)
-hMtData.Draw("E")  # Data points
-hMtBackground.Draw("HIST SAME")
-hMtSignal.Draw("HIST SAME")
+c = ROOT.TCanvas("c", "Visible Mass Plot", 800, 700)
+
+hMvisData.Draw("E")
+hMvisBackground.Draw("HIST SAME")
 
 # Legend
-leg = ROOT.TLegend(0.65, 0.70, 0.88, 0.88)
-leg.AddEntry(hMtData, "Data", "lep")
-leg.AddEntry(hMtSignal, "Signal MC (scaled)", "l")
-leg.AddEntry(hMtBackground, "Background MC (scaled)", "l")
+leg = ROOT.TLegend(0.60, 0.72, 0.88, 0.85)
+
+leg.AddEntry(
+    hMvisData,
+    "Data",
+    "lep"
+)
+
+leg.AddEntry(
+    hMvisBackground,
+    "Background MC (scaled)",
+    "l"
+)
+
 leg.Draw()
 
 # Save plot
-c.SaveAs("combined3.pdf")
-print "Background raw entries:", hMtBackground.GetEntries()
-print "Background weighted integral:", hMtBackground.Integral()
-print "Data raw entries:", hMtData.GetEntries()
+c.SaveAs("combined_visible_mass.pdf")
+
+# Print statistics
+print "Background raw entries:", hMvisBackground.GetEntries()
+print "Background weighted integral:", hMvisBackground.Integral()
+
+print "Data raw entries:", hMvisData.GetEntries()
+print "Data integral:", hMvisData.Integral()

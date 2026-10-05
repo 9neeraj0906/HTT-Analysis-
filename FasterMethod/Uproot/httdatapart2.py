@@ -1,7 +1,5 @@
 import ROOT
 import time
-import math
-import sys, os
 from analysisfxn import Analysis_up
 
 
@@ -55,21 +53,50 @@ dataPath = [
     "/data/mu/6C8BBA90-79DC-CA45-9E0F-4AB683E91D8F.root"
 ]
 
-output_file = ROOT.TFile("hMTData_combinedPart2.root", "RECREATE")
-hMTDataTotal = None
+
+output_file = ROOT.TFile(
+    "hMvisData_combinedPart2.root",
+    "RECREATE"
+)
+
+hMvisDataTotal = None
+
 start = time.time()
-for i in range(len(dataPath)):
+
+for i, fp in enumerate(dataPath):
+
     file_start = time.time()
-    hMTData = Analysis_up(dataPath[i], hist_name="htemp%d" % i, is_mc=False)
+
+    hMvisData = Analysis_up(
+        fp,
+        hist_name="hMvis_%d" % i,
+        is_mc=False
+    )
+
     print "[%d/%d] %s done in %.1fs" % (
-        i + 1, len(dataPath), dataPath[i], time.time() - file_start)
-    if hMTDataTotal is None:
-        hMTDataTotal = hMTData.Clone("hMTDataTotal")
+        i + 1,
+        len(dataPath),
+        fp,
+        time.time() - file_start
+    )
+
+    if hMvisDataTotal is None:
+        hMvisDataTotal = hMvisData.Clone(
+            "hMvisDataTotal"
+        )
     else:
-        hMTDataTotal.Add(hMTData)
-print "\nAll files processed in %.1fs" % (time.time() - start)
-print "Data raw entries:", hMTDataTotal.GetEntries()
+        hMvisDataTotal.Add(hMvisData)
+
+
+print "\nData Part 2 processed in %.1fs" % (
+    time.time() - start
+)
+
+print "Data Part 2 raw entries:", hMvisDataTotal.GetEntries()
+print "Data Part 2 integral:", hMvisDataTotal.Integral()
+
 
 output_file.cd()
-hMTDataTotal.Write()
+hMvisDataTotal.Write()
+
 output_file.Close()

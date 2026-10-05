@@ -1,8 +1,7 @@
 import ROOT
 import time
-import math
-import sys, os
 from analysisfxn import Analysis_up, get_total_gen_event_sumw
+
 
 backgroundMCPath = [
     "/data/bmc/0082C29D-E74C-024A-BE9B-97B29EE7A4A2.root",
@@ -48,43 +47,51 @@ backgroundMCPath = [
     "/data/bmc/ED08B6D8-2823-D24D-B1BA-1141EA893E7B.root"
 ]
 
-# IMPORTANT: genEventSumw must be the TOTAL across the whole sample (all
-# 41 files), computed ONCE up front -- not recomputed per-file. Using a
-# per-file local value as its own denominator would make every file
-# normalize itself as if it were the entire sample (confirmed by your
-# diagnostic: each file's local genEventSumw is close to its own local
-# sum(genWeight), not a dataset-wide total).
+
+BACKGROUND_XSEC = 6077.22
+LUMINOSITY = 35920.0
+
 print "Computing total genEventSumw across all background files..."
 totalSumw = get_total_gen_event_sumw(backgroundMCPath)
 print "Total genEventSumw:", totalSumw
 
-# TODO: confirm this is the correct cross-section (pb) for this specific
-# background process/sample -- 6077.22 is the standard DY NNLO value,
-# only correct if this really is your DY background sample.
-BACKGROUND_XSEC = 6077.22
+output_file = ROOT.TFile(
+    "hMvisBackground_combined.root",
+    "RECREATE"
+)
 
-output_file = ROOT.TFile("hMtBackground_combined21.root", "RECREATE")
-hMtBackgroundTotal = None
+hMvisBackgroundTotal = None
 
 start = time.time()
-for i in range(len(backgroundMCPath)):
-    file_start = time.time()
-    hMtBackground = Analysis_up(
-        backgroundMCPath[i], hist_name="htemp%d" % i, is_mc=True,
-        xsec=BACKGROUND_XSEC, genEventSumw=totalSumw
-    )
-    print "[%d/%d] %s done in %.1fs" % (
-        i + 1, len(backgroundMCPath), backgroundMCPath[i], time.time() - file_start)
 
-    if hMtBackgroundTotal is None:
-        hMtBackgroundTotal = hMtBackground.Clone("hMtBackgroundTotalmc")
+for i, fp in enumerate(backgroundMCPath):
+    file_start = time.time()
+
+    hMvis = Analysis_up(
+        fp,
+        hist_name="hMvis_%d" % i,
+        is_mc=False,
+        xsec=BACKGROUND_XSEC,
+        luminosity=LUMINOSITY,
+        genEventSumw=totalSumw
+    )
+
+    print "[%d/%d] %s done in %.1fs" % (
+        i + 1,
+        len(backgroundMCPath),
+        fp,
+        time.time() - file_start
+    )
+
+    if hMvisBackgroundTotal is None:
+        hMvisBackgroundTotal = hMvis.Clone(
+            "hMvisBackgroundTotal"
+        )
     else:
-        hMtBackgroundTotal.Add(hMtBackground)
+        hMvisBackgroundTotal.Add(hMvis)
 
 print "\nAll files processed in %.1fs" % (time.time() - start)
-print "Background raw entries:", hMtBackgroundTotal.GetEntries()
-print "Background weighted integral:", hMtBackgroundTotal.Integral()
 
 output_file.cd()
-hMtBackgroundTotal.Write()
+hMvisBackgroundTotal.Write()
 output_file.Close()
